@@ -1,0 +1,23 @@
+# Railway Deployment Configuration
+# Deploy at: https://railway.app
+
+# Railway will automatically detect the backend folder
+# Add these environment variables in Railway dashboard:
+
+# Required Environment Variables:
+# SECRET_KEY=your-production-secret-key
+# DATABASE_URL=postgresql://... (Railway provides this automatically)
+# FLASK_ENV=production
+
+# Optional:
+# CORS_ORIGINS=https://your-frontend-url.railway.app
+
+# Railway uses the Dockerfile by default or can use buildpacks
+# For Python/Flask apps, Railway auto-detects requirements.txt
+
+# Database:
+# Add a PostgreSQL plugin in Railway dashboard
+# Railway will automatically set DATABASE_URL environment variable
+
+# Build & Deploy:
+# Railway will automatically deploy on git push to main branch
