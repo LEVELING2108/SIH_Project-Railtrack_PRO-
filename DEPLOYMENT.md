@@ -2,15 +2,29 @@
 
 Complete guide to deploy the QR-Based Vendor Verification System on free hosting platforms.
 
+## 🆕 Hybrid Deployment: Railway + Vercel + Docker
+
+This project now supports a **hybrid deployment strategy** giving you the best of both worlds:
+
+| Component | Platform | Benefits |
+|-----------|----------|----------|
+| **Frontend** | Vercel | CDN, Auto HTTPS, Global Edge, Free |
+| **Backend** | Railway | Auto-scaling, Managed PostgreSQL, Free tier |
+| **Local/Self-hosted** | Docker | Full control, Offline use, VPS deployment |
+
+See [HYBRID_DEPLOYMENT.md](HYBRID_DEPLOYMENT.md) for complete hybrid deployment guide.
+
 ---
 
 ## 📋 Table of Contents
 
-1. [Local Development Setup](#local-development-setup)
-2. [Docker Deployment](#docker-deployment)
-3. [Railway Deployment (Recommended)](#railway-deployment)
-4. [Render Deployment](#render-deployment)
-5. [Alternative Free Hosting Options](#alternative-free-hosting-options)
+1. [Hybrid Deployment (Recommended)](#hybrid-deployment-recommended)
+2. [Local Development Setup](#local-development-setup)
+3. [Docker Deployment](#docker-deployment)
+4. [Railway Deployment](#railway-deployment)
+5. [Vercel Frontend Deployment](#vercel-frontend-deployment)
+6. [Render Deployment](#render-deployment)
+7. [Alternative Free Hosting Options](#alternative-free-hosting-options)
 
 ---
 
