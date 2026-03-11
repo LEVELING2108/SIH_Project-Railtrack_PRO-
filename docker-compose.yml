@@ -47,3 +47,16 @@ services:
 
 volumes:
   postgres_data:
+
+# ============================================================
+# PRODUCTION COMPOSE: Use docker-compose.prod.yml instead
+# ============================================================
+# For production deployment with your own database, use:
+#   docker-compose -f docker-compose.prod.yml up -d
+#
+# This will use:
+# - Production backend with Gunicorn
+# - Frontend served via Nginx (optimized)
+# - PostgreSQL with persistent storage
+# - Health checks and restart policies
+# ============================================================
