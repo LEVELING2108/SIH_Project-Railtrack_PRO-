@@ -11,7 +11,7 @@ from functools import wraps
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from flask_migrate import Migrate
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.exceptions import BadRequest, NotFound, InternalServerError
 import qrcode
 from PIL import Image
@@ -51,8 +51,6 @@ def create_app(config_class=Config):
     db.init_app(app)
     ma.init_app(app)
     migrate = Migrate(app, db)
-
-    # ============== Error Handlers ==============
 
     @app.errorhandler(400)
     def bad_request(error):
@@ -123,7 +121,6 @@ def create_app(config_class=Config):
     @limiter.limit("100 per hour")
     def get_vendors():
         """Get all vendors with optional pagination"""
-        from flask_jwt_extended import get_jwt_identity
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
 
@@ -175,7 +172,6 @@ def create_app(config_class=Config):
     @limiter.limit("30 per hour")
     def create_vendor():
         """Create a new vendor"""
-        from flask_jwt_extended import get_jwt_identity
         data = request.get_json()
 
         if not data:

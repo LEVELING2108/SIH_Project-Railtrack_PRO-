@@ -9,45 +9,56 @@ const api = axios.create({
   },
 });
 
+// Add token to every request automatically
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Vendor APIs
 export const vendorAPI = {
-  getAll: (page = 1, perPage = 10) => 
+  getAll: (page = 1, perPage = 10) =>
     api.get(`/vendors?page=${page}&per_page=${perPage}`),
-  
-  getById: (id) => 
+  getById: (id) =>
     api.get(`/vendors/${id}`),
-  
-  create: (data) => 
+  create: (data) =>
     api.post('/vendors', data),
-  
-  update: (id, data) => 
+  update: (id, data) =>
     api.put(`/vendors/${id}`, data),
-  
-  delete: (id) => 
+  delete: (id) =>
     api.delete(`/vendors/${id}`),
-  
-  getQR: (id) => 
+  getQR: (id) =>
     api.get(`/vendors/${id}/qr`),
-  
-  downloadQR: (id) => 
+  downloadQR: (id) =>
     api.get(`/vendors/${id}/qr/download`, { responseType: 'blob' }),
 };
 
 // Scanner API
 export const scannerAPI = {
-  scan: (qrData) => 
+  scan: (qrData) =>
     api.post('/scan', { qr_data: qrData }),
 };
 
 // Analytics API
 export const analyticsAPI = {
-  getStats: () => 
+  getStats: () =>
     api.get('/analytics'),
+};
+
+// Auth API
+export const authAPI = {
+  login: (username, password) =>
+    api.post('/auth/login', { username, password }),
+  logout: () =>
+    api.post('/auth/logout'),
 };
 
 // Health check
 export const healthAPI = {
-  check: () => 
+  check: () =>
     api.get('/health'),
 };
 

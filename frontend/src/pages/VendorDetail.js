@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { vendorAPI } from '../api';
 
@@ -11,20 +11,19 @@ function VendorDetail() {
   const [error, setError] = useState(null);
   const [showQR, setShowQR] = useState(false);
 
-  const fetchVendor = useCallback(async () => {
-    try {
-      const response = await vendorAPI.getById(id);
-      setVendor(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load vendor details');
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
+    const fetchVendor = async () => {
+      try {
+        const response = await vendorAPI.getById(id);
+        setVendor(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to load vendor details');
+        setLoading(false);
+      }
+    };
     fetchVendor();
-  }, [fetchVendor]);
+  }, [id]);
 
 
   const fetchQR = async () => {
