@@ -1,0 +1,111 @@
+version: '3.8'
+
+# Production Docker Compose Configuration
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+
+services:
+  # Backend API with Gunicorn
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=False
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/vendors
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - RATELIMIT_ENABLED=true
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=vendors
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init-db:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Redis for Rate Limiting (optional, for production scale)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
+
+# ============================================================
+# ENVIRONMENT VARIABLES REQUIRED:
+# ============================================================
+# SECRET_KEY - Your Flask secret key (generate with: python -c "import secrets; print(secrets.token_hex(32))")
+# JWT_SECRET_KEY - Your JWT secret key (same as above)
+# POSTGRES_PASSWORD - PostgreSQL database password
+# CORS_ORIGINS - Comma-separated list of allowed origins
+#
+# Create a .env file with these variables before running
+# ============================================================
