@@ -114,6 +114,14 @@ export const analyticsAPI = {
     api.get('/analytics'),
 };
 
+// Vendor Performance API
+export const performanceAPI = {
+  getVendorPerformance: () =>
+    api.get('/vendors/performance'),
+  seedData: () =>
+    api.post('/seed'),
+};
+
 // Track Items API (Railway Track Fittings)
 export const trackItemsAPI = {
   getAll: (page = 1, perPage = 10, filters = {}) => {

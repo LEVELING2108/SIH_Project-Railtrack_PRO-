@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { analyticsAPI } from '../api';
+import { analyticsAPI, performanceAPI } from '../api';
 
 function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMessage, setSeedMessage] = useState(null);
 
   useEffect(() => {
     fetchStats();
@@ -19,6 +21,33 @@ function Dashboard() {
     } catch (err) {
       setError('Failed to load analytics');
       setLoading(false);
+    }
+  };
+
+  const handleSeedData = async () => {
+    if (!window.confirm('This will add 20 sample vendors with their track equipment. Continue?')) {
+      return;
+    }
+
+    setSeeding(true);
+    setSeedMessage(null);
+
+    try {
+      const response = await performanceAPI.seedData();
+      setSeedMessage({
+        type: 'success',
+        text: `✅ Seeded ${response.data.vendors_created} vendors, ${response.data.track_items_created} track items, and ${response.data.inspections_created} inspections!`
+      });
+      fetchStats(); // Refresh stats
+    } catch (err) {
+      console.error('Seed error:', err);
+      const errorMsg = err.response?.data?.message || err.response?.data?.error || 'Failed to seed data. Make sure you are logged in as admin.';
+      setSeedMessage({
+        type: 'error',
+        text: `Error: ${errorMsg} (Status: ${err.response?.status})`
+      });
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -88,6 +117,26 @@ function Dashboard() {
           <Link to="/vendors" className="btn btn-secondary">
             📋 View All Vendors
           </Link>
+        </div>
+      </div>
+
+      {/* Seed Data */}
+      <div className="card">
+        <div className="card-header">📦 Sample Data</div>
+        <div className="text-center p-3">
+          <p className="mb-3">Load 20 sample vendors with track equipment for testing and performance analysis</p>
+          {seedMessage && (
+            <div className={`alert alert-${seedMessage.type} mb-2`}>
+              {seedMessage.text}
+            </div>
+          )}
+          <button
+            onClick={handleSeedData}
+            disabled={seeding}
+            className="btn btn-primary btn-lg"
+          >
+            {seeding ? '⏳ Loading...' : '🚀 Load Sample Data'}
+          </button>
         </div>
       </div>
 
