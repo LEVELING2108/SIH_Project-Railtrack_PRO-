@@ -1,4 +1,4 @@
-/* Global Styles */
+
 * {
   margin: 0;
   padding: 0;
@@ -181,7 +181,7 @@ body {
   font-size: 0.875rem;
 }
 
-/* Forms */
+
 .form-group {
   margin-bottom: 1.5rem;
 }

@@ -104,18 +104,34 @@ function Scanner() {
     setScanResult(null);
 
     try {
-      const html5QrCode = new Html5Qrcode('qr-reader');
-      const decodedText = await html5QrCode.scanFile(file, true);
+      // Create a temporary visible container for scanning
+      const tempContainer = document.createElement('div');
+      tempContainer.id = 'qr-reader-temp';
+      tempContainer.style.display = 'block';
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '-9999px';
+      document.body.appendChild(tempContainer);
+
+      const html5QrCode = new Html5Qrcode('qr-reader-temp');
+      const decodedText = await html5QrCode.scanFile(file, false);
 
       console.log('QR Code from file:', decodedText);
       await handleScan(decodedText);
 
       // Clean up
-      html5QrCode.clear();
+      await html5QrCode.clear();
+      document.body.removeChild(tempContainer);
     } catch (err) {
       console.error('Error scanning file:', err);
       setError('Failed to scan QR code from image. Please ensure the image contains a valid QR code.');
       setLoading(false);
+      
+      // Clean up temp container if it exists
+      const tempContainer = document.getElementById('qr-reader-temp');
+      if (tempContainer) {
+        document.body.removeChild(tempContainer);
+      }
     }
 
     // Reset file input
@@ -175,9 +191,6 @@ function Scanner() {
               style={{ display: 'none' }}
               onChange={handleFileChange}
             />
-
-            {/* Hidden div for file scanning */}
-            <div id="qr-reader" style={{ display: 'none' }}></div>
           </div>
         </div>
       )}

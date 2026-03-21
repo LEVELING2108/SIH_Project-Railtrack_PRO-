@@ -13,6 +13,8 @@ import Login from './pages/Login';
 import TrackItemsList from './pages/TrackItemsList';
 import AddTrackItem from './pages/AddTrackItem';
 import TrackItemDetail from './pages/TrackItemDetail';
+import VendorPerformance from './pages/VendorPerformance';
+import AddInspection from './pages/AddInspection';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access_token'));
@@ -61,6 +63,12 @@ function App() {
 
             {/* Scanner */}
             <Route path="/scan" element={isAuthenticated ? <Scanner /> : <Navigate to="/login" replace />} />
+            
+            {/* Analytics */}
+            <Route path="/performance" element={isAuthenticated ? <VendorPerformance /> : <Navigate to="/login" replace />} />
+            
+            {/* Inspection Routes */}
+            <Route path="/track-items/:id/inspections/add" element={isAuthenticated ? <AddInspection /> : <Navigate to="/login" replace />} />
           </Routes>
         </main>
       </div>
@@ -89,6 +97,7 @@ function Navbar({ isAuthenticated, onLogout }) {
               <li><Link to="/track-items" className={location.pathname.startsWith('/track-items') ? 'nav-link active' : 'nav-link'}>Track Items</Link></li>
               <li><Link to="/vendors" className={location.pathname.startsWith('/vendors') ? 'nav-link active' : 'nav-link'}>Vendors</Link></li>
               <li><Link to="/scan" className={location.pathname === '/scan' ? 'nav-link active' : 'nav-link'}>Scan QR</Link></li>
+              <li><Link to="/performance" className={location.pathname === '/performance' ? 'nav-link active' : 'nav-link'}>Performance</Link></li>
             </ul>
             <div style={{ padding: '1rem', borderTop: '1px solid #e1e8ed' }}>
               <button onClick={handleLogout} className="btn btn-logout" style={{ width: '100%' }}>

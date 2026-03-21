@@ -413,6 +413,201 @@ def create_app(config_class=Config):
             "timestamp": datetime.utcnow().isoformat()
         }), 200
 
+    # ============== Seed Data Endpoint ==============
+
+    @app.route('/api/seed', methods=['POST'])
+    @jwt_required()
+    @limiter.limit("5 per hour")
+    def seed_data():
+        """Seed database with sample vendors and track items"""
+        try:
+            from seed_data import seed_all
+            
+            result = seed_all()
+            
+            return jsonify({
+                "message": "Database seeded successfully",
+                "vendors_created": len(result['vendors']),
+                "track_items_created": len(result['track_items']),
+                "inspections_created": len(result['inspections'])
+            }), 200
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                "error": "Failed to seed data",
+                "message": str(e)
+            }), 500
+
+    # ============== Vendor Performance Comparison Endpoint ==============
+
+    @app.route('/api/vendors/performance', methods=['GET'])
+    @jwt_required()
+    @limiter.limit("60 per hour")
+    def get_vendor_performance():
+        """Get detailed performance comparison of all vendors with their track items"""
+        vendors = Vendor.query.all()
+        
+        performance_data = []
+        
+        for vendor in vendors:
+            vendor_data = vendor.to_dict()
+            insights_data = {**vendor_data, 'vendor_id': vendor_data['id']}
+            del insights_data['id']
+            insights = build_vendor_insights(**insights_data)
+            
+            # Get track items for this vendor
+            track_items = TrackItem.query.filter_by(vendor_id=vendor.id).all()
+            
+            items_summary = []
+            total_defects = 0
+            total_replacements = 0
+            item_types = {}
+            
+            for item in track_items:
+                items_summary.append({
+                    'id': item.id,
+                    'item_type': item.item_type,
+                    'lot_number': item.lot_number,
+                    'performance_status': item.performance_status,
+                    'defect_count': item.defect_count,
+                    'replacement_count': item.replacement_count,
+                    'installation_location': item.installation_location,
+                    'zone': item.zone
+                })
+                
+                total_defects += item.defect_count
+                total_replacements += item.replacement_count
+                
+                # Group by item type
+                if item.item_type not in item_types:
+                    item_types[item.item_type] = {'count': 0, 'defects': 0, 'good': 0, 'average': 0, 'poor': 0}
+                item_types[item.item_type]['count'] += 1
+                item_types[item.item_type]['defects'] += item.defect_count
+                if item.performance_status == 'good':
+                    item_types[item.item_type]['good'] += 1
+                elif item.performance_status == 'average':
+                    item_types[item.item_type]['average'] += 1
+                else:
+                    item_types[item.item_type]['poor'] += 1
+            
+            # Get inspection stats
+            inspections = Inspection.query.join(TrackItem).filter(TrackItem.vendor_id == vendor.id).all()
+            passed_inspections = sum(1 for i in inspections if i.inspection_status == 'passed')
+            failed_inspections = sum(1 for i in inspections if i.inspection_status == 'failed')
+            conditional_inspections = sum(1 for i in inspections if i.inspection_status == 'conditional')
+            
+            performance_data.append({
+                'vendor': vendor_data,
+                'risk_score': insights.risk_score,
+                'flags': insights.flags,
+                'recommendations': insights.recommendations,
+                'summary': insights.summary,
+                'track_items': {
+                    'total': len(track_items),
+                    'items': items_summary,
+                    'by_type': item_types,
+                    'total_defects': total_defects,
+                    'total_replacements': total_replacements
+                },
+                'inspections': {
+                    'total': len(inspections),
+                    'passed': passed_inspections,
+                    'failed': failed_inspections,
+                    'conditional': conditional_inspections,
+                    'pass_rate': round((passed_inspections / len(inspections) * 100) if inspections else 0, 2)
+                }
+            })
+        
+        # Sort by risk score (lowest first - best performers)
+        performance_data.sort(key=lambda x: x['risk_score'])
+        
+        return jsonify({
+            "vendors": performance_data,
+            "total": len(performance_data),
+            "timestamp": datetime.utcnow().isoformat()
+        }), 200
+
+    # ============== Track Item Analytics Endpoint ==============
+
+    @app.route('/api/track-items/analytics', methods=['GET'])
+    @jwt_required()
+    @limiter.limit("60 per hour")
+    def get_track_items_analytics():
+        """Get analytics for track items by type, zone, and performance"""
+        # Get all track items
+        all_items = TrackItem.query.all()
+        
+        # Overall stats
+        total_items = len(all_items)
+        total_defects = sum(item.defect_count for item in all_items)
+        total_replacements = sum(item.replacement_count for item in all_items)
+        
+        # By item type
+        by_type = {}
+        for item in all_items:
+            if item.item_type not in by_type:
+                by_type[item.item_type] = {
+                    'count': 0,
+                    'good': 0,
+                    'average': 0,
+                    'poor': 0,
+                    'defects': 0,
+                    'replacements': 0
+                }
+            by_type[item.item_type]['count'] += 1
+            by_type[item.item_type]['defects'] += item.defect_count
+            by_type[item.item_type]['replacements'] += item.replacement_count
+            if item.performance_status == 'good':
+                by_type[item.item_type]['good'] += 1
+            elif item.performance_status == 'average':
+                by_type[item.item_type]['average'] += 1
+            else:
+                by_type[item.item_type]['poor'] += 1
+        
+        # By zone
+        by_zone = {}
+        for item in all_items:
+            zone = item.zone or 'Unknown'
+            if zone not in by_zone:
+                by_zone[zone] = {
+                    'count': 0,
+                    'good': 0,
+                    'average': 0,
+                    'poor': 0,
+                    'defects': 0
+                }
+            by_zone[zone]['count'] += 1
+            by_zone[zone]['defects'] += item.defect_count
+            if item.performance_status == 'good':
+                by_zone[zone]['good'] += 1
+            elif item.performance_status == 'average':
+                by_zone[zone]['average'] += 1
+            else:
+                by_zone[zone]['poor'] += 1
+        
+        # By status
+        by_status = {
+            'in_stock': sum(1 for item in all_items if item.status == 'in_stock'),
+            'installed': sum(1 for item in all_items if item.status == 'installed'),
+            'in_service': sum(1 for item in all_items if item.status == 'in_service'),
+            'defective': sum(1 for item in all_items if item.status == 'defective'),
+            'replaced': sum(1 for item in all_items if item.status == 'replaced')
+        }
+        
+        return jsonify({
+            "summary": {
+                "total_items": total_items,
+                "total_defects": total_defects,
+                "total_replacements": total_replacements,
+                "average_defects_per_item": round(total_defects / total_items, 2) if total_items else 0
+            },
+            "by_type": by_type,
+            "by_zone": by_zone,
+            "by_status": by_status,
+            "timestamp": datetime.utcnow().isoformat()
+        }), 200
+
     # ============== Database Initialization ==============
 
     def create_default_admin():
