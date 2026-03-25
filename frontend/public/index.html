@@ -4,27 +4,31 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#667eea" />
-    <meta name="description" content="Premium QR-Based Vendor Verification System - Modern, Secure, AI-Powered" />
-    <meta name="author" content="VendorVerify" />
-    
+    <meta name="description" content="RailTrack Pro - Premium Railway Track Verification System with AI-Powered Risk Assessment" />
+    <meta name="author" content="RailTrack Pro" />
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚂</text></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚂</text></svg>" />
+
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="VendorVerify - Premium Vendor Verification" />
-    <meta property="og:description" content="AI-powered vendor verification with QR codes and risk assessment" />
-    
+    <meta property="og:title" content="RailTrack Pro - Railway Track Verification System" />
+    <meta property="og:description" content="AI-powered railway track verification with QR codes and risk assessment" />
+
     <!-- Google Fonts - Inter & Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-    
-    <title>VendorVerify | Premium Vendor Verification System</title>
+
+    <title>RailTrack Pro | Railway Track Verification System</title>
     
     <style>
       /* Critical CSS for faster initial load */
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { 
+      body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf5 50%, #f0e8f5 100%);
         min-height: 100vh;
       }
       #root { min-height: 100vh; }
@@ -40,19 +44,23 @@
       .app-loading-spinner {
         width: 64px;
         height: 64px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top-color: #ffffff;
+        border: 4px solid rgba(13, 142, 232, 0.2);
+        border-top-color: #0d8ee8;
         border-radius: 50%;
         animation: spin 1s linear infinite;
+        box-shadow: 0 4px 20px rgba(13, 142, 232, 0.3);
       }
       @keyframes spin {
         to { transform: rotate(360deg); }
       }
       .app-loading-text {
-        color: white;
+        color: var(--slate-800, #2d3748);
         font-size: 1.125rem;
-        font-weight: 500;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        font-weight: 600;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
     </style>
   </head>
@@ -62,7 +70,7 @@
       <!-- Loading state while React loads -->
       <div class="app-loading">
         <div class="app-loading-spinner"></div>
-        <div class="app-loading-text">Loading VendorVerify...</div>
+        <div class="app-loading-text">Loading RailTrack Pro...</div>
       </div>
     </div>
   </body>
