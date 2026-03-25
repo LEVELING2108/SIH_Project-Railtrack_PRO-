@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { trackItemsAPI, inspectionsAPI } from '../api';
-import { QRCodeSVG } from 'qrcode.react';
+import { trackItemsAPI } from '../api';
 
 function TrackItemDetail() {
   const { id } = useParams();
@@ -21,12 +20,7 @@ function TrackItemDetail() {
     sleeper: 'Sleeper'
   };
 
-  useEffect(() => {
-    fetchItemDetails();
-    fetchQRCode();
-  }, [id]);
-
-  const fetchItemDetails = async () => {
+  const fetchItemDetails = useCallback(async () => {
     try {
       setLoading(true);
       const response = await trackItemsAPI.getById(id);
@@ -40,16 +34,21 @@ function TrackItemDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchQRCode = async () => {
+  const fetchQRCode = useCallback(async () => {
     try {
       const response = await trackItemsAPI.getQR(id);
       setQrCode(response.data);
     } catch (err) {
       console.error('Failed to load QR code', err);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchItemDetails();
+    fetchQRCode();
+  }, [fetchItemDetails, fetchQRCode]);
 
   const getRiskBadgeClass = (level) => {
     switch (level) {

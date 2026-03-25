@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trackItemsAPI } from '../api';
 
@@ -44,11 +44,7 @@ function TrackItemsList() {
     replaced: '🔄'
   };
 
-  useEffect(() => {
-    fetchItems();
-  }, [page, filters]);
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
       const response = await trackItemsAPI.getAll(page, 10, filters);
@@ -61,7 +57,11 @@ function TrackItemsList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filters]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   const handleFilterChange = (e) => {
     setFilters({

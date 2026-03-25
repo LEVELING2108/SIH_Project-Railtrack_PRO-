@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { trackItemsAPI, inspectionsAPI } from '../api';
+import { inspectionsAPI } from '../api';
 
 function AddInspection() {
   const { id } = useParams();
